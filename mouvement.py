@@ -22,3 +22,5 @@ def deplacer(marty: Marty, direction: str, nb_pas: int = 1):
         gauche(marty, nb_pas)
     elif direction == 'R':
         droite(marty, nb_pas)
+    else:
+        raise ValueError(f"Direction inconnue : {direction}")
