@@ -2,7 +2,8 @@
 
 import pytest
 from marty_mock import MartyMock
-from mouvement import deplacer
+from deplacement import deplacer
+from bras import appliquer_bras, position_neutre, ANGLE_NEUTRE, ANGLE_LEVE, ANGLE_ARRIERE
 
 @pytest.fixture
 def marty():
@@ -50,3 +51,45 @@ def test_nb_pas_defaut(marty):
 def test_nb_pas_multiple(marty):
     deplacer(marty, 'L', 5)
     assert marty.historique[0]["num_steps"] == 5
+
+    # --- Tests bras ---
+
+def test_appliquer_bras_gauche_leve(marty):
+    appliquer_bras(marty, ['ALU'])
+    assert marty.historique[0]["action"] == "arms"
+    assert marty.historique[0]["left_angle"] == ANGLE_LEVE
+    assert marty.historique[0]["right_angle"] == ANGLE_NEUTRE
+
+def test_appliquer_bras_droit_leve(marty):
+    appliquer_bras(marty, ['ARU'])
+    assert marty.historique[0]["left_angle"] == ANGLE_NEUTRE
+    assert marty.historique[0]["right_angle"] == ANGLE_LEVE
+
+def test_appliquer_bras_gauche_arriere(marty):
+    appliquer_bras(marty, ['ALB'])
+    assert marty.historique[0]["left_angle"] == ANGLE_ARRIERE
+    assert marty.historique[0]["right_angle"] == ANGLE_NEUTRE
+
+def test_appliquer_bras_droit_arriere(marty):
+    appliquer_bras(marty, ['ARB'])
+    assert marty.historique[0]["left_angle"] == ANGLE_NEUTRE
+    assert marty.historique[0]["right_angle"] == ANGLE_ARRIERE
+
+def test_appliquer_bras_combinaison(marty):
+    appliquer_bras(marty, ['ALU', 'ARB'])
+    assert marty.historique[0]["left_angle"] == ANGLE_LEVE
+    assert marty.historique[0]["right_angle"] == ANGLE_ARRIERE
+
+def test_appliquer_bras_un_seul_appel(marty):
+    """Une combinaison de bras ne doit faire qu'un seul appel à arms."""
+    appliquer_bras(marty, ['ALU', 'ARB'])
+    assert len(marty.historique) == 1
+
+def test_appliquer_bras_neutre(marty):
+    position_neutre(marty)
+    assert marty.historique[0]["left_angle"] == ANGLE_NEUTRE
+    assert marty.historique[0]["right_angle"] == ANGLE_NEUTRE
+
+def test_appliquer_bras_commande_inconnue(marty):
+    with pytest.raises(ValueError):
+        appliquer_bras(marty, ['XXX'])

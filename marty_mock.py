@@ -25,3 +25,13 @@ class MartyMock:
         }
         self.historique.append(entry)
         print(f"[MOCK] sidestep → {num_steps} pas à {side} ({move_time}ms)")
+
+    def arms(self, left_angle: int, right_angle: int, move_time: int):
+        entry = {
+            "action": "arms",
+            "left_angle": left_angle,
+            "right_angle": right_angle,
+            "move_time": move_time,
+        }
+        self.historique.append(entry)
+        print(f"[MOCK] arms → gauche={left_angle}° droite={right_angle}° ({move_time}ms)")
