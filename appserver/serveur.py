@@ -19,7 +19,7 @@ def ping_ip(ip):
     return None
 
 def scanner_reseau():
-    print(f"📡 Lancement du radar sur {BASE_IP}x ...")
+    print(f"Lancement du radar sur {BASE_IP}x ...")
     machines_actives = []
     
     
