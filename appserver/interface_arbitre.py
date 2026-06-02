@@ -2,6 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QTextEdit, QTableWidget, QLabel, QPushButton
 from PyQt6.QtWidgets import QGroupBox 
+
 class FenetreArbitre(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -55,6 +56,25 @@ class FenetreArbitre(QMainWindow):
     def simuler_reception(self) :
         self.list_robot.addItem("Robot ABC123")
         self.log.append("[10:42] Robot ABC123 a fait le mouvement ALU")
+    
+    def textToDictionnaire(fichier) :
+        regles = {}
+        couleur_actuelle = None
+        with open(fichier, "r", encoding="utf-8") as file:
+            for line in file:
+                if line.startswith("MVS"):
+                    morceaux = line.split(" ")
+                    regles[morceaux[0]] = int(morceaux[1].strip())
+                line = line.strip()
+                if line.startswith("["):
+                    couleur_actuelle = line[1]
+                    regles[couleur_actuelle]={}
+                elif "=" in line :
+                    morceaux = line.split("=")
+                    regles[couleur_actuelle][morceaux[0]] = int(morceaux[1].strip())
+        print(regles)
+        return regles
+        
 
 
 if __name__ == "__main__":
@@ -63,5 +83,7 @@ if __name__ == "__main__":
     fenetre = FenetreArbitre()
     fenetre.show()
     
+    
+    textToDictionnaire("appserver/exemple.battle")
     sys.exit(app.exec())
 
