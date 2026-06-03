@@ -85,11 +85,12 @@ class Server(BaseHTTPRequestHandler):
         if rid is None:
             return
         
-        # A faire : lire le nombre de pas depuis le fichier .battle (MVS)
+        # A faire : lire le nombre de pas depuis le fichier .battle 
 
-        nbr_pas = 10
-        print(f"debur choré  {rid} : {nbr_pas} pas")
-        self.ok_response(str(nbr_pas))
+        nbr_mouvement_chore = random.randint(5,20)
+
+        print(f"debur choré  {rid} : {nbr_mouvement_chore} pas")
+        self.ok_response(str(nbr_mouvement_chore))
 
     def step_response(self):
         # get les mvt du robot
@@ -106,14 +107,18 @@ class Server(BaseHTTPRequestHandler):
         col = data['col']
         arm = data['arm']
         exp = data['exp']
-        # TODO: calculer les points selon les règles du fichier .battle
+
+
+        # A faire : calculer les points
+
+
         points = 0
         scores[rid] = scores.get(rid, 0) + points
         print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
         self.ok_response(str(points))
 
     def bye_response(self):
-        # Déconnecte le robot et le retire de la liste des robots connus
+        # deco le robot et le retire de la liste des robots connus
         data = self.read_json_body()
         if data is None:
             return

@@ -4,14 +4,17 @@ import json
 HOST = 'localhost'
 PORT = 1632
 
-rid = -1  # rid 
+rid = None  # rid 
 
 
 def _send_and_read(method, path, body=None):
     conn = http.client.HTTPConnection(HOST, PORT)
-    conn.request(method, path, body=body)
-    reponse = conn.getresponse()
-    return reponse.read().decode('utf-8')
+    try:
+        conn.request(method, path, body=body)
+        reponse = conn.getresponse()
+        return reponse.read().decode('utf-8')
+    finally:
+        conn.close()
 
 
 def hello():
@@ -25,14 +28,14 @@ def hello():
 
 
 def start():
-    # Déclare le démarrage d'une chorégraphie, renvoie le nombre de pas décidé par le serveur
-    if rid == -1:
+    # debut d'une chore, le serv renvoi le nombre de mouvement a faire dans la chore
+    if rid == None:
         print("faire le hello()")
         return None
     json_message = json.dumps({"rid": rid})
     try:
         nbr_pas = _send_and_read('POST', '/start', body=json_message)
-        print("Nombre de pas : " + nbr_pas)
+        print(f"Nombre de mouvements pour la chore : {nbr_pas}")
         return int(nbr_pas)
     except Exception as e:
         print("Erreur start : " + str(e))
@@ -41,7 +44,7 @@ def start():
 
 def step(col, arm, exp):
     # Envoie un pas au serveur (couleur, mouvement de bras, expression), renvoie les points obtenus
-    if rid == -1:
+    if rid == None:
         print("faire le hello()")
         return None
     json_message = json.dumps({"rid": rid, "col": col, "arm": arm, "exp": exp})
@@ -56,7 +59,7 @@ def step(col, arm, exp):
 
 def bye():
     # Déconnecte le robot du serveur
-    if rid == -1:
+    if rid == None:
         return
     json_message = json.dumps({"rid": rid})
     try:
