@@ -57,24 +57,41 @@ class FenetreArbitre(QMainWindow):
         self.list_robot.addItem("Robot ABC123")
         self.log.append("[10:42] Robot ABC123 a fait le mouvement ALU")
     
-    def textToDictionnaire(fichier) :
-        regles = {}
-        couleur_actuelle = None
-        with open(fichier, "r", encoding="utf-8") as file:
-            for line in file:
-                if line.startswith("MVS"):
-                    morceaux = line.split(" ")
-                    regles[morceaux[0]] = int(morceaux[1].strip())
-                line = line.strip()
-                if line.startswith("["):
-                    couleur_actuelle = line[1]
-                    regles[couleur_actuelle]={}
-                elif "=" in line :
-                    morceaux = line.split("=")
-                    regles[couleur_actuelle][morceaux[0]] = int(morceaux[1].strip())
-        print(regles)
-        return regles
-        
+def textToDictionnaire(fichier) :
+    regles = {}
+    couleur_actuelle = None
+    with open(fichier, "r", encoding="utf-8") as file:
+        for line in file:
+            if line.startswith("MVS"):
+                morceaux = line.split(" ")
+                regles[morceaux[0]] = int(morceaux[1].strip())
+            line = line.strip()
+            if line.startswith("["):
+                couleur_actuelle = line[1]
+                regles[couleur_actuelle]={}
+            elif "=" in line :
+                morceaux = line.split("=")
+                regles[couleur_actuelle][morceaux[0]] = int(morceaux[1].strip())
+    print(regles)
+    return regles
+
+def calculerScore(json, regle) :
+    col = json["col"]
+    arm = json["arm"]
+    score=0
+    for key in regle[col] :
+        if ' ' in arm :
+            regle_cherche = arm.replace(' ', '+') 
+            if regle_cherche == key :
+                score+=regle[col][key]
+        if ',' in key :
+            arm_propre = arm.replace(' ', ',')
+            if arm_propre == key:
+                score+=regle[col][key]
+        #elif 
+        #à continuer
+    
+    return score
 
 
 if __name__ == "__main__":
