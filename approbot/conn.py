@@ -1,18 +1,22 @@
 from martypy import Marty
+import deplacement
 
 print("Entrer l'ip du Marty")
 ip = input()
 
 if not ip:
     #ip part defaut
-    ip = "192.168.0.101"
+    ip = "192.168.0.113"
     print("ip par defaut : ", ip)
+
 
 try:
     my_marty = Marty("wifi", ip)
     print("connexion etablie")
     
-    #my_marty.dance()
+    deplacement.avancer(my_marty, 10)
+    
+    my_marty.dance()    
     
     my_marty.close()
     print("deconnexion")
