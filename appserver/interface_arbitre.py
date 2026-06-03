@@ -91,19 +91,24 @@ def calculerScore(json, regle):
 
     score = 0
     arm_propre = arm.replace(" ", "+")
+    arm_propre = sorted(arm_propre.split("+"))
     exp_propre = exp.replace(" ", "+")
-
+    
     for key in regle[col]:
+        key_propre = sorted(key.split("+"))
 
-        if arm_propre == key or exp_propre == key :
+        if arm_propre == key_propre or exp_propre == key:
             score += regle[col][key]
-
+            
         elif "," in key:
             key_propre = key.split(",")
-            if arm_propre in key_propre:
-                score += regle[col][key]
-            if exp_propre in key_propre:
-                score += regle[col][key]
+            for action in key_propre :
+                if action in arm_propre:
+                    score += regle[col][key]
+                    break
+                if action in exp_propre:
+                    score += regle[col][key]
+                    break
 
     return score
 
@@ -113,6 +118,7 @@ if __name__ == "__main__":
 
     fenetre = FenetreArbitre()
     fenetre.show()
-
-    textToDictionnaire("appserver/exemple.battle")
+    json_test = {"col": "R", "arm": "ARU ALU", "exp": "XNG"}
+    regle = textToDictionnaire("appserver/exemple.battle")
+    print(calculerScore(json_test,regle))
     sys.exit(app.exec())
