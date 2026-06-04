@@ -9,8 +9,12 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QLabel,
     QPushButton,
+    QTableWidgetItem,
+    QHeaderView,
+    QAbstractItemView
 )
 from PyQt6.QtWidgets import QGroupBox
+from PyQt6.QtCore import Qt
 
 
 class FenetreArbitre(QMainWindow):
@@ -43,6 +47,12 @@ class FenetreArbitre(QMainWindow):
         layout_interne_score = QVBoxLayout()
         layout_interne_score.addWidget(self.score)
         boite_score.setLayout(layout_interne_score)
+        self.score.setColumnCount(2)
+        self.score.setHorizontalHeaderLabels(["Nom du Robot", "Score Final"])
+        self.score.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.score.verticalHeader().setVisible(False)
+        self.score.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
@@ -59,10 +69,25 @@ class FenetreArbitre(QMainWindow):
         layout_principal_horizontal.addLayout(colonne_droite_verticale)
 
         widget_central.setLayout(layout_principal_horizontal)
+        self.regle = textToDictionnaire("appserver/exemple.battle")
 
     def simuler_reception(self):
+
+        json_test = {"col": "R", "arm": "ARU ALU", "exp": "XNG"}
+        score = calculerScore(json_test, self.regle)
         self.list_robot.addItem("Robot ABC123")
         self.log.append("[10:42] Robot ABC123 a fait le mouvement ALU")
+        ligne_actuelle = self.score.rowCount()
+        self.score.insertRow(ligne_actuelle)
+        score = calculerScore(json_test, self.regle)
+        boite_score = QTableWidgetItem(str(score))
+        boite_nom = QTableWidgetItem("Robot ABC123")
+        boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.score.setItem(ligne_actuelle,1,boite_score)
+        self.score.setItem(ligne_actuelle,0,boite_nom)
+
+
 
 
 def textToDictionnaire(fichier):
@@ -93,16 +118,16 @@ def calculerScore(json, regle):
     arm_propre = arm.replace(" ", "+")
     arm_propre = sorted(arm_propre.split("+"))
     exp_propre = exp.replace(" ", "+")
-    
+
     for key in regle[col]:
         key_propre = sorted(key.split("+"))
 
         if arm_propre == key_propre or exp_propre == key:
             score += regle[col][key]
-            
+
         elif "," in key:
             key_propre = key.split(",")
-            for action in key_propre :
+            for action in key_propre:
                 if action in arm_propre:
                     score += regle[col][key]
                     break
@@ -118,7 +143,5 @@ if __name__ == "__main__":
 
     fenetre = FenetreArbitre()
     fenetre.show()
-    json_test = {"col": "R", "arm": "ARU ALU", "exp": "XNG"}
-    regle = textToDictionnaire("appserver/exemple.battle")
-    print(calculerScore(json_test,regle))
+
     sys.exit(app.exec())
