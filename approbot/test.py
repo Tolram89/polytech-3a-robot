@@ -5,6 +5,7 @@ from marty_mock import MartyMock
 from deplacement import deplacer
 from bras import appliquer_bras, position_neutre, ANGLE_NEUTRE, ANGLE_LEVE, ANGLE_ARRIERE
 from expression import appliquer_expression, COULEUR_ETEINT, COULEUR_BLEU, COULEUR_ROUGE, COULEUR_VERT, COULEUR_ARC_EN_CIEL
+from detection_couleur import associer_couleur, detecter_couleur, VALEURS_REFERENCE
 
 @pytest.fixture
 def marty():
@@ -128,3 +129,17 @@ def test_expression_enjoue(marty):
 def test_expression_inconnue(marty):
     with pytest.raises(ValueError):
         appliquer_expression(marty, 'XXX')
+
+# Tests de détection de couleur
+
+def test_associer_couleur_exacte():
+    for couleur, valeur in VALEURS_REFERENCE.items():
+        assert associer_couleur(valeur) == couleur
+
+def test_associer_couleur_proche():
+    assert associer_couleur(12) == 'N'   # proche de 10
+    assert associer_couleur(148) == 'G'  # proche de 150
+
+def test_detecter_couleur(marty):
+    marty.valeur_capteur_simulee = 150   # on simule le robot sur du vert
+    assert detecter_couleur(marty) == 'G'

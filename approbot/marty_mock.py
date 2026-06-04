@@ -53,3 +53,12 @@ class MartyMock:
         }
         self.historique.append(entry)
         print(f"[MOCK] disco_color → {color} sur {add_on}")
+
+    def get_ground_sensor_reading(self, add_on_or_side: str):
+        entry = {
+            "action": "get_ground_sensor_reading",
+            "add_on_or_side": add_on_or_side,
+        }
+        self.historique.append(entry)
+        print(f"[MOCK] get_ground_sensor_reading → {add_on_or_side} : {self.valeur_capteur_simulee}")
+        return self.valeur_capteur_simulee
