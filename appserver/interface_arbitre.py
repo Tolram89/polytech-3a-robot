@@ -18,12 +18,16 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from datetime import datetime
 
 class SignauxServeur(QObject):
-    nouveau_score = pyqtSignal(str, int, str,str)
+    nouveau_score = pyqtSignal(str, int, str,str, str)
+    nouvel_evenement = pyqtSignal(str) #signal pour les logs hello et bye
+    nouveau_robot = pyqtSignal(str) #lorsqu'on a un noouveau robot
 class FenetreArbitre(QMainWindow):
     def __init__(self):
         super().__init__()
         self.radio = SignauxServeur()
         self.radio.nouveau_score.connect(self.mise_a_jour_tableau)
+        self.radio.nouvel_evenement.connect(self.ajouter_log_evenement)
+        self.radio.nouveau_robot.connect(self.inscrire_robot)
 
         self.setWindowTitle("Interface arbitre")
         self.setGeometry(100, 100, 800, 600)
@@ -31,19 +35,15 @@ class FenetreArbitre(QMainWindow):
         widget_central = QWidget()
         self.setCentralWidget(widget_central)
 
-        layout_principal_horizontal = QHBoxLayout()
-        colonne_gauche_verticale = QVBoxLayout()
-        colonne_droite_verticale = QVBoxLayout()
+        # --- NOUVELLE ARCHITECTURE DES LAYOUTS ---
+        layout_global_vertical = QVBoxLayout()
+        layout_haut_horizontal = QHBoxLayout()
 
-        # à enlever plus tard
-        simulation_button = QPushButton("simulation")
-        simulation_button.clicked.connect(self.simuler_reception)
-
+        # --- CREATION DES BOITES (Inchangé) ---
         self.list_robot = QListWidget()
         boite_robots = QGroupBox("Robots en piste")
         layout_interne_robot = QVBoxLayout()
         layout_interne_robot.addWidget(self.list_robot)
-        layout_interne_robot.addWidget(simulation_button)
         boite_robots.setLayout(layout_interne_robot)
 
         self.score = QTableWidget()
@@ -57,7 +57,6 @@ class FenetreArbitre(QMainWindow):
         self.score.verticalHeader().setVisible(False)
         self.score.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         
-
         self.log = QTextEdit()
         self.log.setReadOnly(True)
         boite_log = QGroupBox("Log")
@@ -65,43 +64,48 @@ class FenetreArbitre(QMainWindow):
         layout_interne_log.addWidget(self.log)
         boite_log.setLayout(layout_interne_log)
 
-        colonne_gauche_verticale.addWidget(boite_robots)
-        colonne_droite_verticale.addWidget(boite_score)
-        colonne_droite_verticale.addWidget(boite_log)
+        # --- ASSEMBLAGE FINAL ---
+        # 1. On place les robots et le score côte à côte dans l'étage du haut
+        layout_haut_horizontal.addWidget(boite_robots)
+        layout_haut_horizontal.addWidget(boite_score)
 
-        layout_principal_horizontal.addLayout(colonne_gauche_verticale)
-        layout_principal_horizontal.addLayout(colonne_droite_verticale)
+        # 2. On empile l'étage du haut, puis la zone de log en dessous
+        layout_global_vertical.addLayout(layout_haut_horizontal)
+        layout_global_vertical.addWidget(boite_log)
 
-        widget_central.setLayout(layout_principal_horizontal)
+        # 3. On applique le tout au widget central
+        widget_central.setLayout(layout_global_vertical)
         self.regle = textToDictionnaire("appserver/exemple.battle")
 
-    def mise_a_jour_tableau(self, nom_robot, score, mouvement, expression) :
-        robot_connu = False
+    def mise_a_jour_tableau(self, nom_robot, score, mouvement, expression, points) :
         for i in range(0, self.score.rowCount()):
             boite_existante = self.score.item(i, 0)
             if boite_existante.text() == nom_robot :
-                robot_connu = True
                 boite_score_existante = self.score.item(i, 1)
                 boite_score_existante.setText(str(score))
                 break
             
-        self.log.append(f"{datetime.now().strftime('%H:%M:%S')} {nom_robot} a fait le mouvement {mouvement} avec l'expression {expression}")
+        self.log.append(f"{datetime.now().strftime('%H:%M:%S')} {nom_robot} a fait le mouvement {mouvement} avec l'expression {expression} pour {points} points")
 
-        if robot_connu == False :
-            self.list_robot.addItem(nom_robot)
-            ligne_actuelle = self.score.rowCount()
-            
-            self.score.insertRow(ligne_actuelle)
-            boite_score = QTableWidgetItem(str(score))
-            boite_nom = QTableWidgetItem(nom_robot)
-            boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.score.setItem(ligne_actuelle,1,boite_score)
-            self.score.setItem(ligne_actuelle,0,boite_nom)
 
-    def simuler_reception(self):
-        self.radio.nouveau_score.emit("Robot_Test", 10, "ALU", "XNG")
+    def inscrire_robot(self, nom_robot):
+        if len(self.list_robot.findItems(nom_robot, Qt.MatchFlag.MatchExactly)) > 0:
+            return
+        self.list_robot.addItem(nom_robot)
+        ligne_actuelle = self.score.rowCount()
+        self.score.insertRow(ligne_actuelle)
+        boite_score = QTableWidgetItem(str(0))
+        boite_nom = QTableWidgetItem(nom_robot)
+        boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.score.setItem(ligne_actuelle,1,boite_score)
+        self.score.setItem(ligne_actuelle,0,boite_nom)
 
+
+    def ajouter_log_evenement(self, message):
+        heure= datetime.now().strftime('%H:%M:%S')
+        log = f"{heure} {message}"
+        self.log.append(log)
 
 
 

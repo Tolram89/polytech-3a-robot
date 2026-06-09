@@ -104,6 +104,9 @@ class Server(BaseHTTPRequestHandler):
         rid = self.check_rid(data)
         if rid is None:
             return
+        if rid not in compteur_pas:
+            self.send_error(400, "le robot doit faire start")
+            return
         for field in ('col', 'arm', 'exp'):
             if field not in data:
                 self.send_error(400, f"Champ {field} manquant")
@@ -115,8 +118,7 @@ class Server(BaseHTTPRequestHandler):
             compteur_pas[rid]+=1
             points = calculerScore(data, REGLES_BATTLE)
             scores[rid] = scores.get(rid, 0) + points
-            print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
-            self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp)
+            self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp, points)
             self.ok_response(str(points))
         else :
             self.send_error(403, "Chorégraphie terminée, nombre de pas max atteint")
@@ -132,7 +134,7 @@ class Server(BaseHTTPRequestHandler):
             return
         ip = next(ip for ip, r in robot_list.items() if r == rid)
         del robot_list[ip]
-        print(f"Déconnexion du robot {rid}")
+        self.radio.nouvel_evenement.emit(f"Déconnexion du robot {rid}")
         self.ok_response("deconnexion reussie")
 
     def ok_response(self, message="OK"):
@@ -158,9 +160,9 @@ class Server(BaseHTTPRequestHandler):
         #reutilise le RID existant si ip connue
         if ip not in robot_list:
             robot_list[ip] = self.generate_rid()
-
-        print(f"Connexion de {ip} -> RID : {robot_list[ip]}")
+        self.radio.nouvel_evenement.emit(f"Connexion de {ip} -> RID : {robot_list[ip]}")
         self.ok_response(robot_list[ip])
+        self.radio.nouveau_robot.emit(robot_list[ip])
 
 
 
