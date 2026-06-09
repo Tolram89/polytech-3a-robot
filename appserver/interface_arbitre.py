@@ -76,17 +76,29 @@ class FenetreArbitre(QMainWindow):
         self.regle = textToDictionnaire("appserver/exemple.battle")
 
     def mise_a_jour_tableau(self, nom_robot, score, mouvement, expression) :
-        self.list_robot.addItem(nom_robot)
+        robot_connu = False
+        for i in range(0, self.score.rowCount()):
+            boite_existante = self.score.item(i, 0)
+            if boite_existante.text() == nom_robot :
+                robot_connu = True
+                boite_score_existante = self.score.item(i, 1)
+                nouveau_score = int(boite_score_existante.text()) + score
+                boite_score_existante.setText(str(nouveau_score))
+                break
+            
         self.log.append(f"{datetime.now().strftime('%H:%M:%S')} {nom_robot} a fait le mouvement {mouvement} avec l'expression {expression}")
-        ligne_actuelle = self.score.rowCount()
-        
-        self.score.insertRow(ligne_actuelle)
-        boite_score = QTableWidgetItem(str(score))
-        boite_nom = QTableWidgetItem(nom_robot)
-        boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.score.setItem(ligne_actuelle,1,boite_score)
-        self.score.setItem(ligne_actuelle,0,boite_nom)
+
+        if robot_connu == False :
+            self.list_robot.addItem(nom_robot)
+            ligne_actuelle = self.score.rowCount()
+            
+            self.score.insertRow(ligne_actuelle)
+            boite_score = QTableWidgetItem(str(score))
+            boite_nom = QTableWidgetItem(nom_robot)
+            boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.score.setItem(ligne_actuelle,1,boite_score)
+            self.score.setItem(ligne_actuelle,0,boite_nom)
 
     def simuler_reception(self):
         self.radio.nouveau_score.emit("Robot_Test", 10, "ALU", "XNG")

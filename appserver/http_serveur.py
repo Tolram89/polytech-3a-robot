@@ -90,7 +90,7 @@ class Server(BaseHTTPRequestHandler):
         
         # A faire : lire le nombre de pas depuis le fichier .battle 
 
-        nbr_mouvement_chore = random.randint(5,20)
+        nbr_mouvement_chore = REGLES_BATTLE['MVS']
 
         print(f"debur choré  {rid} : {nbr_mouvement_chore} pas")
         self.ok_response(str(nbr_mouvement_chore))
@@ -114,7 +114,7 @@ class Server(BaseHTTPRequestHandler):
         points = calculerScore(data, REGLES_BATTLE)
         scores[rid] = scores.get(rid, 0) + points
         print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
-        self.radio.nouveau_score.emit(rid, points, arm, exp)
+        self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp)
         self.ok_response(str(points))
 
     def bye_response(self):
