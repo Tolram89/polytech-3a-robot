@@ -2,13 +2,16 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import random, string
 import json
+from interface_arbitre import calculerScore, textToDictionnaire
+
 
 version = "1"
 robot_list = {}  # dico des robots connectés {ip: rid}
 scores = {}      # score de chaque robot {rid: points}
-
+REGLES_BATTLE= textToDictionnaire("appserver/exemple.battle")
 
 class Server(BaseHTTPRequestHandler):
+
 
     def do_GET(self):
         #teste requete 
@@ -108,13 +111,10 @@ class Server(BaseHTTPRequestHandler):
         arm = data['arm']
         exp = data['exp']
 
-
-        # A faire : calculer les points
-
-
-        points = 0
+        points = calculerScore(data, REGLES_BATTLE)
         scores[rid] = scores.get(rid, 0) + points
         print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
+        self.radio.nouveau_score.emit(rid, points, arm, exp)
         self.ok_response(str(points))
 
     def bye_response(self):
@@ -159,9 +159,15 @@ class Server(BaseHTTPRequestHandler):
 
 
 
+def demarrer_serveur(radio_recue):
+    Server.radio = radio_recue 
+    
+    PORT = 1632
+    serveur = HTTPServer(('', PORT), Server)
+    print(f"Serveur démarré sur le port {PORT}")
+    serveur.serve_forever()
 
-# start serveur
-PORT = 1632
-serveur = HTTPServer(('', PORT), Server)
-print(f"Serveur démarré sur le port {PORT}")
-serveur.serve_forever()
+
+
+
+

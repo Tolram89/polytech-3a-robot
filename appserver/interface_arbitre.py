@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QTextEdit,
     QTableWidget,
-    QLabel,
     QPushButton,
     QTableWidgetItem,
     QHeaderView,
@@ -15,11 +14,16 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtWidgets import QGroupBox
 from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QObject, pyqtSignal
+from datetime import datetime
 
-
+class SignauxServeur(QObject):
+    nouveau_score = pyqtSignal(str, int, str,str)
 class FenetreArbitre(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.radio = SignauxServeur()
+        self.radio.nouveau_score.connect(self.mise_a_jour_tableau)
 
         self.setWindowTitle("Interface arbitre")
         self.setGeometry(100, 100, 800, 600)
@@ -71,21 +75,21 @@ class FenetreArbitre(QMainWindow):
         widget_central.setLayout(layout_principal_horizontal)
         self.regle = textToDictionnaire("appserver/exemple.battle")
 
-    def simuler_reception(self):
-
-        json_test = {"col": "R", "arm": "ARU ALU", "exp": "XNG"}
-        score = calculerScore(json_test, self.regle)
-        self.list_robot.addItem("Robot ABC123")
-        self.log.append("[10:42] Robot ABC123 a fait le mouvement ALU")
+    def mise_a_jour_tableau(self, nom_robot, score, mouvement, expression) :
+        self.list_robot.addItem(nom_robot)
+        self.log.append(f"{datetime.now().strftime('%H:%M:%S')} {nom_robot} a fait le mouvement {mouvement} avec l'expression {expression}")
         ligne_actuelle = self.score.rowCount()
+        
         self.score.insertRow(ligne_actuelle)
-        score = calculerScore(json_test, self.regle)
         boite_score = QTableWidgetItem(str(score))
-        boite_nom = QTableWidgetItem("Robot ABC123")
+        boite_nom = QTableWidgetItem(nom_robot)
         boite_nom.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         boite_score.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self.score.setItem(ligne_actuelle,1,boite_score)
         self.score.setItem(ligne_actuelle,0,boite_nom)
+
+    def simuler_reception(self):
+        self.radio.nouveau_score.emit("Robot_Test", 10, "ALU", "XNG")
 
 
 
@@ -118,6 +122,8 @@ def calculerScore(json, regle):
     arm_propre = arm.replace(" ", "+")
     arm_propre = sorted(arm_propre.split("+"))
     exp_propre = exp.replace(" ", "+")
+    if(not col in regle):
+        return 0 #si la couleur n'est pas dans les regles alors on renvoie 0
 
     for key in regle[col]:
         key_propre = sorted(key.split("+"))
