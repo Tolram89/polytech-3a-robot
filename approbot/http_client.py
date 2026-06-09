@@ -1,14 +1,14 @@
 import http.client
 import json
 
-HOST = 'localhost'
+HOST = '192.168.0.100'
 PORT = 1632
 
 rid = None  # rid 
 
 
-def _send_and_read(method, path, body=None):
-    conn = http.client.HTTPConnection(HOST, PORT)
+def _send_and_read(method, path,host, port, body=None):
+    conn = http.client.HTTPConnection(host, port)
     try:
         conn.request(method, path, body=body)
         reponse = conn.getresponse()
@@ -21,7 +21,7 @@ def hello():
     #demande un rid au serveur, premiere chose a faire
     global rid
     try:
-        rid = _send_and_read('POST', '/hello')
+        rid = _send_and_read('POST', '/hello',HOST, PORT)
         print("RID reçu -> " + rid)
     except Exception as e:
         print("Erreur send_hello : " + str(e))
@@ -34,7 +34,7 @@ def start():
         return None
     json_message = json.dumps({"rid": rid})
     try:
-        nbr_pas = _send_and_read('POST', '/start', body=json_message)
+        nbr_pas = _send_and_read('POST', '/start',HOST,PORT, body=json_message)
         print(f"Nombre de mouvements pour la chore : {nbr_pas}")
         return int(nbr_pas)
     except Exception as e:
@@ -49,7 +49,7 @@ def step(col, arm, exp):
         return None
     json_message = json.dumps({"rid": rid, "col": col, "arm": arm, "exp": exp})
     try:
-        points = _send_and_read('POST', '/step', body=json_message)
+        points = _send_and_read('POST', '/step',HOST,PORT, body=json_message)
         print(f"Points obtenus : {points}")
         return int(points)
     except Exception as e:
@@ -63,7 +63,7 @@ def bye():
         return
     json_message = json.dumps({"rid": rid})
     try:
-        reponse = _send_and_read('POST', '/bye', body=json_message)
+        reponse = _send_and_read('POST', '/bye',HOST,PORT, body=json_message)
         print("Déconnexion : " + reponse)
     except Exception as e:
         print("Erreur bye : " + str(e))
@@ -74,4 +74,5 @@ def bye():
 if __name__ == '__main__':
     hello()
     #start(10)
-    step("G", "ALU+ARU","XNT")
+    #step("R", "ALU+ARU","XNG")
+    
