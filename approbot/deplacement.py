@@ -4,7 +4,7 @@ from martypy import Marty
 
 def avancer(marty: Marty, nb_pas: int = 1):
     #25 pour longueur de pas en mm, et 1000 pour tps en ms pour faire un pas
-    marty.walk(steps=nb_pas, step_length=25, move_time=1500)
+    marty.walk(num_steps=nb_pas, step_length=25, move_time=1500)
 
 def reculer(marty: Marty, nb_pas: int = -1):
     marty.walk(steps=nb_pas, step_length=-25, move_time=1500)
