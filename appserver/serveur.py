@@ -25,7 +25,6 @@ def scanner_reseau():
     
     ips_a_tester = [f"{BASE_IP}{i}" for i in range(2, 254)]
     
-    
     with concurrent.futures.ThreadPoolExecutor(max_workers=200) as executor:
         
         resultats = executor.map(ping_ip, ips_a_tester)
@@ -55,3 +54,4 @@ if __name__ == "__main__":
     print(f"\n {len(ip_robot)} robots trouvés sur le réseau :")
     for ip in ip_robot:
         print(f" - {ip}")
+        
