@@ -2,13 +2,17 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import random, string
 import json
+from interface_arbitre import calculerScore, textToDictionnaire
+
 
 version = "1"
 robot_list = {}  # dico des robots connectés {ip: rid}
 scores = {}      # score de chaque robot {rid: points}
-
+compteur_pas = {} # nombre de pas chaque robot {rid : nombre de pas}
+REGLES_BATTLE= textToDictionnaire("appserver/exemple.battle")
 
 class Server(BaseHTTPRequestHandler):
+
 
     def do_GET(self):
         #teste requete 
@@ -85,9 +89,9 @@ class Server(BaseHTTPRequestHandler):
         if rid is None:
             return
         
-        # A faire : lire le nombre de pas depuis le fichier .battle 
+        compteur_pas[rid] = 0
 
-        nbr_mouvement_chore = random.randint(5,20)
+        nbr_mouvement_chore = REGLES_BATTLE['MVS']
 
         print(f"debur choré  {rid} : {nbr_mouvement_chore} pas")
         self.ok_response(str(nbr_mouvement_chore))
@@ -100,6 +104,9 @@ class Server(BaseHTTPRequestHandler):
         rid = self.check_rid(data)
         if rid is None:
             return
+        if rid not in compteur_pas:
+            self.send_error(400, "le robot doit faire start")
+            return
         for field in ('col', 'arm', 'exp'):
             if field not in data:
                 self.send_error(400, f"Champ {field} manquant")
@@ -107,15 +114,15 @@ class Server(BaseHTTPRequestHandler):
         col = data['col']
         arm = data['arm']
         exp = data['exp']
-
-
-        # A faire : calculer les points
-
-
-        points = 0
-        scores[rid] = scores.get(rid, 0) + points
-        print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
-        self.ok_response(str(points))
+        if compteur_pas[rid] < REGLES_BATTLE['MVS'] :
+            compteur_pas[rid]+=1
+            points = calculerScore(data, REGLES_BATTLE)
+            scores[rid] = scores.get(rid, 0) + points
+            self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp, points)
+            self.ok_response(str(points))
+        else :
+            self.send_error(403, "Chorégraphie terminée, nombre de pas max atteint")
+            return
 
     def bye_response(self):
         # deco le robot et le retire de la liste des robots connus
@@ -127,7 +134,7 @@ class Server(BaseHTTPRequestHandler):
             return
         ip = next(ip for ip, r in robot_list.items() if r == rid)
         del robot_list[ip]
-        print(f"Déconnexion du robot {rid}")
+        self.radio.nouvel_evenement.emit(f"Déconnexion du robot {rid}")
         self.ok_response("deconnexion reussie")
 
     def ok_response(self, message="OK"):
@@ -153,15 +160,21 @@ class Server(BaseHTTPRequestHandler):
         #reutilise le RID existant si ip connue
         if ip not in robot_list:
             robot_list[ip] = self.generate_rid()
-
-        print(f"Connexion de {ip} -> RID : {robot_list[ip]}")
+        self.radio.nouvel_evenement.emit(f"Connexion de {ip} -> RID : {robot_list[ip]}")
         self.ok_response(robot_list[ip])
+        self.radio.nouveau_robot.emit(robot_list[ip])
+
+
+
+def demarrer_serveur(radio_recue):
+    Server.radio = radio_recue 
+    
+    PORT = 1632
+    serveur = HTTPServer(('', PORT), Server)
+    print(f"Serveur démarré sur le port {PORT}")
+    serveur.serve_forever()
 
 
 
 
-# start serveur
-PORT = 1632
-serveur = HTTPServer(('', PORT), Server)
-print(f"Serveur démarré sur le port {PORT}")
-serveur.serve_forever()
+
