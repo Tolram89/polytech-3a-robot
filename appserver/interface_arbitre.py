@@ -82,8 +82,7 @@ class FenetreArbitre(QMainWindow):
             if boite_existante.text() == nom_robot :
                 robot_connu = True
                 boite_score_existante = self.score.item(i, 1)
-                nouveau_score = int(boite_score_existante.text()) + score
-                boite_score_existante.setText(str(nouveau_score))
+                boite_score_existante.setText(str(score))
                 break
             
         self.log.append(f"{datetime.now().strftime('%H:%M:%S')} {nom_robot} a fait le mouvement {mouvement} avec l'expression {expression}")

@@ -8,6 +8,7 @@ from interface_arbitre import calculerScore, textToDictionnaire
 version = "1"
 robot_list = {}  # dico des robots connectés {ip: rid}
 scores = {}      # score de chaque robot {rid: points}
+compteur_pas = {} # nombre de pas chaque robot {rid : nombre de pas}
 REGLES_BATTLE= textToDictionnaire("appserver/exemple.battle")
 
 class Server(BaseHTTPRequestHandler):
@@ -88,7 +89,7 @@ class Server(BaseHTTPRequestHandler):
         if rid is None:
             return
         
-        # A faire : lire le nombre de pas depuis le fichier .battle 
+        compteur_pas[rid] = 0
 
         nbr_mouvement_chore = REGLES_BATTLE['MVS']
 
@@ -110,12 +111,16 @@ class Server(BaseHTTPRequestHandler):
         col = data['col']
         arm = data['arm']
         exp = data['exp']
-
-        points = calculerScore(data, REGLES_BATTLE)
-        scores[rid] = scores.get(rid, 0) + points
-        print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
-        self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp)
-        self.ok_response(str(points))
+        if compteur_pas[rid] < REGLES_BATTLE['MVS'] :
+            compteur_pas[rid]+=1
+            points = calculerScore(data, REGLES_BATTLE)
+            scores[rid] = scores.get(rid, 0) + points
+            print(f"Step de {rid} : col={col} arm={arm} exp={exp} -> {points} pts (total: {scores[rid]})")
+            self.radio.nouveau_score.emit(rid, scores[rid] , arm, exp)
+            self.ok_response(str(points))
+        else :
+            self.send_error(403, "Chorégraphie terminée, nombre de pas max atteint")
+            return
 
     def bye_response(self):
         # deco le robot et le retire de la liste des robots connus
