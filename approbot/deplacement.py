@@ -7,7 +7,7 @@ def avancer(marty: Marty, nb_pas: int = 1):
     marty.walk(num_steps=nb_pas, step_length=25, move_time=1500)
 
 def reculer(marty: Marty, nb_pas: int = -1):
-    marty.walk(steps=nb_pas, step_length=-25, move_time=1500)
+    marty.walk(num_steps=nb_pas, step_length=-25, move_time=1500)
 
 def gauche(marty: Marty, nb_pas: int = 1):
     marty.sidestep(side='left', steps = nb_pas, move_time=1500)

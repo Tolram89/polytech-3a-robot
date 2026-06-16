@@ -18,7 +18,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from datetime import datetime
 
 class SignauxServeur(QObject):
-    nouveau_score = pyqtSignal(str, int, str,str, str)
+    nouveau_score = pyqtSignal(str, int, str,str, int)
     nouvel_evenement = pyqtSignal(str) #signal pour les logs hello et bye
     nouveau_robot = pyqtSignal(str) #lorsqu'on a un noouveau robot
 class FenetreArbitre(QMainWindow):
@@ -124,7 +124,7 @@ def textToDictionnaire(fichier):
             elif "=" in line:
                 morceaux = line.split("=")
                 regles[couleur_actuelle][morceaux[0]] = int(morceaux[1].strip())
-    print(regles)
+    
     return regles
 
 
