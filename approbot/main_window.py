@@ -110,10 +110,39 @@ class MainWindow(QMainWindow):
     def _onglet_principal(self):
         w = QWidget()
         layout = QVBoxLayout(w)
+        
+        self.btn_charger_dance = QPushButton("Charger et Lancer une Chorégraphie (.dance)")
+        self.btn_charger_dance.setMinimumHeight(40) 
+        self.btn_charger_dance.clicked.connect(self._charger_choregraphie)
+        layout.addWidget(self.btn_charger_dance)
+
         self.journal = QTextEdit()
         self.journal.setReadOnly(True)
         layout.addWidget(self.journal)
         return w
+    
+    def _charger_choregraphie(self):
+        if not self.marty:
+            self.log("Erreur : Veuillez vous connecter au robot d'abord.")
+            return
+
+        from PyQt6.QtWidgets import QFileDialog
+        chemin_fichier, _ = QFileDialog.getOpenFileName(
+            self,
+            "Sélectionner la chorégraphie",
+            "",
+            "Fichiers Dance (*.dance);;Tous les fichiers (*)"
+        )
+
+        if chemin_fichier:
+            self.log(f"Fichier chargé : {chemin_fichier}")
+            self.log("Démarrage de la battle...")
+            
+            self._action(
+                lambda: __import__('choregraphie').executer_choregraphie(self.marty, chemin_fichier),
+                "Battle", 
+                "Chorégraphie terminée avec succès !"
+            )
 
     def _onglet_manuel(self):
         w = QWidget()
