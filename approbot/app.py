@@ -4,7 +4,7 @@ from main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("AppoRobot")
+    app.setApplicationName("AppRobot")
     fenetre = MainWindow()
     fenetre.show()
     sys.exit(app.exec())

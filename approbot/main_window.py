@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QGroupBox, QTabWidget
 )
 from PyQt6.QtCore import QThread, pyqtSignal, QTimer
+import http_client
 
 class ConnexionWorker(QThread):
     succes = pyqtSignal(object)
@@ -78,16 +79,24 @@ class MainWindow(QMainWindow):
     def _panneau_connexion(self):
         grp = QGroupBox("Connexion")
         row = QHBoxLayout(grp)
-        row.addWidget(QLabel("IP :"))
+        
+        row.addWidget(QLabel("IP Robot :"))
         self.champ_ip = QLineEdit("192.168.0.101")
         row.addWidget(self.champ_ip)
+    
+        row.addWidget(QLabel("IP Serveur :"))
+        self.champ_ip_serveur = QLineEdit("192.168.0.100")
+        row.addWidget(self.champ_ip_serveur)
+        
         self.btn_connect = QPushButton("Connecter")
         self.btn_connect.clicked.connect(self._connecter)
         row.addWidget(self.btn_connect)
+        
         self.btn_disconnect = QPushButton("Déconnecter")
         self.btn_disconnect.setEnabled(False)
         self.btn_disconnect.clicked.connect(self._deconnecter)
         row.addWidget(self.btn_disconnect)
+        
         return grp
 
     def _panneau_batterie(self):
@@ -101,10 +110,39 @@ class MainWindow(QMainWindow):
     def _onglet_principal(self):
         w = QWidget()
         layout = QVBoxLayout(w)
+        
+        self.btn_charger_dance = QPushButton("Charger et Lancer une Chorégraphie (.dance)")
+        self.btn_charger_dance.setMinimumHeight(40) 
+        self.btn_charger_dance.clicked.connect(self._charger_choregraphie)
+        layout.addWidget(self.btn_charger_dance)
+
         self.journal = QTextEdit()
         self.journal.setReadOnly(True)
         layout.addWidget(self.journal)
         return w
+    
+    def _charger_choregraphie(self):
+        if not self.marty:
+            self.log("Erreur : Veuillez vous connecter au robot d'abord.")
+            return
+
+        from PyQt6.QtWidgets import QFileDialog
+        chemin_fichier, _ = QFileDialog.getOpenFileName(
+            self,
+            "Sélectionner la chorégraphie",
+            "",
+            "Fichiers Dance (*.dance);;Tous les fichiers (*)"
+        )
+
+        if chemin_fichier:
+            self.log(f"Fichier chargé : {chemin_fichier}")
+            self.log("Démarrage de la battle...")
+            
+            self._action(
+                lambda: __import__('choregraphie').executer_choregraphie(self.marty, chemin_fichier),
+                "Battle", 
+                "Chorégraphie terminée avec succès !"
+            )
 
     def _onglet_manuel(self):
         w = QWidget()
@@ -212,6 +250,12 @@ class MainWindow(QMainWindow):
         self._lire_batterie()
         self.timer_batterie.start()
 
+        ip_serveur = self.champ_ip_serveur.text().strip()
+        if ip_serveur:
+            http_client.HOST = ip_serveur
+            
+        http_client.hello()
+
     def _on_erreur(self, msg):
         self.btn_connect.setEnabled(True)
         self.btn_connect.setText("Connecter")
@@ -229,6 +273,7 @@ class MainWindow(QMainWindow):
         self.btn_disconnect.setEnabled(False)
         self.label_batterie.setText("–")
         self.log("Déconnecté")
+        http_client.bye()
 
     def _lire_batterie(self):
         if not self.marty:
