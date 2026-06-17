@@ -86,7 +86,6 @@ def scan_reseau(port=80, timeout=2.0):
                 trouves.append(ip)
 
         return trouves
-    
     else:
         return None
         
