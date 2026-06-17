@@ -2,7 +2,7 @@ import http.client
 import json
 
 HOST = '192.168.0.100'
-PORT = 1632
+PORT = 5000
 
 rid = None  # rid 
 

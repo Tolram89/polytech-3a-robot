@@ -169,7 +169,7 @@ class Server(BaseHTTPRequestHandler):
 def demarrer_serveur(radio_recue):
     Server.radio = radio_recue 
     
-    PORT = 1632
+    PORT = 5000
     serveur = HTTPServer(('', PORT), Server)
     print(f"Serveur démarré sur le port {PORT}")
     serveur.serve_forever()
