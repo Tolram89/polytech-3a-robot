@@ -6,13 +6,13 @@ NOM_CAPTEUR = "LeftColorSensor"
 
 
 VALEURS_REFERENCE = {
-    'N': (10,  10,  10,  10),    # noir
-    'P': (100, 153, 50,  204),   # mauve
-    'B': (60,  0,   0,   139),    # bleu foncer
-    'Y': (220, 255, 220, 0),     # jaune
-    'C': (200, 135, 206, 235),   # bleu claire
-    'G': (120, 0,   180, 0),     # vert
-    'R': (90,  220, 0,   0),     # touge
+    'N': (15,  20,  10,  8),     # noir
+    'P': (42,  50,  23,  36),    # mauve
+    'B': (29,  28,  18,  25),    # bleu foncer
+    'Y': (139, 244, 97,  52),    # jaune
+    'C': (61,  54,  44,  54),    # bleu claire
+    'G': (33,  40,  29,  20),    # vert
+    'R': (47,  109, 17,  21),    # rouge
 }
 
 
@@ -41,45 +41,3 @@ def associer_couleur(clear, red, green, blue):
 def detecter_couleur(marty: Marty):
     clear, red, green, blue = lire_canaux(marty)
     return associer_couleur(clear, red, green, blue)
-
-
-# Noms lisibles pour guider la calibration.
-NOMS_COULEURS = {
-    'N': "Noir",
-    'P': "Mauve",
-    'B': "Bleu foncé",
-    'Y': "Jaune",
-    'C': "Bleu ciel",
-    'G': "Vert",
-    'R': "Rouge",
-}
-
-
-def calibrer(marty: Marty, nb_mesures: int = 5):
-    """Calibre les couleurs une par une et affiche le VALEURS_REFERENCE à copier.
-
-    Pour chaque couleur : pose le robot sur la pastille, appuie sur Entrée.
-    On fait la moyenne de `nb_mesures` lectures pour plus de stabilité.
-    """
-    nouvelles_valeurs = {}
-
-    for code, nom in NOMS_COULEURS.items():
-        input(f"\nPlace le robot sur la couleur {nom} ({code}) puis appuie sur Entrée...")
-
-        sommes = [0, 0, 0, 0]
-        for _ in range(nb_mesures):
-            canaux = lire_canaux(marty)
-            for i in range(4):
-                sommes[i] += canaux[i]
-
-        moyennes = tuple(round(s / nb_mesures) for s in sommes)
-        nouvelles_valeurs[code] = moyennes
-        print(f"  → {nom} ({code}) : {moyennes}")
-
-    print("\nCalibration terminée. Copie ce dictionnaire dans VALEURS_REFERENCE :\n")
-    print("VALEURS_REFERENCE = {")
-    for code, valeurs in nouvelles_valeurs.items():
-        print(f"    '{code}': {valeurs},  # {NOMS_COULEURS[code]}")
-    print("}")
-
-    return nouvelles_valeurs

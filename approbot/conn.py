@@ -49,7 +49,7 @@ if __name__ == '__main__':
             #Si connexion reussis
             if robot:
                 #On fait faire une expression pour verifier que ca marche 
-                #deplacement.avancer(robot,4)
+                deplacement.avancer(robot,4)
                 expression.enjoue(robot)
                 print("Connexion etablie")
 
