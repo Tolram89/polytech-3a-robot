@@ -31,7 +31,7 @@ A central server and dashboard built with PyQt6 and the `http.server` module.
 
 1. Install the required dependencies:
 ```bash
-pip install -r requirements.txt
+pip install -r requirement.txt
 ```
 
 2. Start the Server:
