@@ -26,11 +26,12 @@ A central server and dashboard built with PyQt6 and the `http.server` module.
 * **GUI:** PyQt6
 * **Hardware Control:** `martypy` library
 * **Networking:** `http.server`, `http.client`, `socket`, `psutil`
+
 ## Installation & Usage
 
 1. Install the required dependencies:
 ```bash
-pip install PyQt6 martypy psutil
+pip install -r requirements.txt
 ```
 
 2. Start the Server:
